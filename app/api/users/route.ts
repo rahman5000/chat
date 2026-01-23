@@ -6,6 +6,6 @@ export async function GET() {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   } else {
-    return NextResponse.json({ messga: data }, { status: 200 });
+    return NextResponse.json({ users: data }, { status: 200 });
   }
 }

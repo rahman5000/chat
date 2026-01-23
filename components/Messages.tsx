@@ -17,7 +17,7 @@ export const Messages = () => {
     <div>
       {messages?.map((m) => (
         <div key={m.id} className="items-center-safe">
-          <p className="text-black">${m.message}</p>
+          <p className="text-black">{m.message}</p>
         </div>
       ))}
       <Button onClick={fetchMessages}>
