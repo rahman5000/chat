@@ -5,6 +5,7 @@ import { Users } from "@/types";
 
 export function useUser() {
   const [users, setUsers] = useState<Users[] | null>(null);
+  const [user, setUser] = useState<Users | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -66,7 +67,7 @@ export function useUser() {
       }
 
       const data = await res.json();
-      return data.user;
+      setUser(data.user);
     } catch (err) {
       setError(`Failed to fetch user ${err}`);
       return null;
@@ -79,5 +80,5 @@ export function useUser() {
     fetchUsers();
   }, []);
 
-  return { users, isLoading, error, setName, fetchUsers, fetchUser };
+  return { users, isLoading, error, setName, user, fetchUsers, fetchUser };
 }
