@@ -4,29 +4,30 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 import { Users } from "@/types";
 
-// ---------------- TYPES ----------------
+/* ---------------- TYPES ---------------- */
 
 type AuthContextType = {
   user: Users | null;
   loading: boolean;
-  login: (name: string) => Promise<boolean>;
-  signup: (name: string) => Promise<boolean>;
+  login: (name: string, password: string) => Promise<boolean>;
+  signup: (name: string, password: string) => Promise<boolean>;
   logout: () => void;
   error: string | null;
 };
 
-// ---------------- CONTEXT ----------------
+/* ---------------- CONTEXT ---------------- */
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// ---------------- PROVIDER ----------------
+/* ---------------- PROVIDER ---------------- */
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<Users | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Restore session
+  /* ---------------- RESTORE SESSION ---------------- */
+
   useEffect(() => {
     const saved = localStorage.getItem("user");
 
@@ -37,20 +38,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  // LOGIN
-  const login = async (name: string) => {
+  /* ---------------- LOGIN ---------------- */
+
+  const login = async (name: string, password: string) => {
     try {
       setError(null);
+      setLoading(true);
 
-      const res = await fetch(`/api/users/${name}`);
-
-      if (!res.ok) {
-        setError("User not found");
-        return false;
-      }
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          password,
+        }),
+      });
 
       const data = await res.json();
 
+      if (!res.ok) {
+        setError(data.error || "Login failed");
+        return false;
+      }
+
+      // Save user
       setUser(data.user);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -58,28 +71,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setError("Login failed");
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // REGISTER
-  const signup = async (name: string) => {
+  /* ---------------- REGISTER ---------------- */
+
+  const signup = async (name: string, password: string) => {
     try {
       setError(null);
+      setLoading(true);
 
       const res = await fetch("/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({
+          name,
+          password,
+        }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        setError("User already exists");
+        setError(data.error || "Registration failed");
         return false;
       }
-
-      const data = await res.json();
 
       const newUser = data.data[0];
 
@@ -90,14 +110,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       setError("Register failed");
       return false;
+    } finally {
+      setLoading(false);
     }
   };
 
-  // LOGOUT
+  /* ---------------- LOGOUT ---------------- */
+
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
   };
+
+  /* ---------------- PROVIDER ---------------- */
 
   return (
     <AuthContext.Provider
@@ -115,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ---------------- HOOK ----------------
+/* ---------------- HOOK ---------------- */
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

@@ -30,7 +30,8 @@ export function useUser() {
       setIsLoading(false);
     }
   };
-  const setName = async (name: string) => {
+
+  const register = async (name: string, password: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -40,7 +41,7 @@ export function useUser() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ name, password }),
       });
 
       if (!res.ok) {
@@ -48,7 +49,37 @@ export function useUser() {
         return;
       }
     } catch (err) {
-      setError(`Failed to add user ${err}`);
+      setError(`Registration failed ${err}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const login = async (name: string, password: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error);
+        return null;
+      }
+
+      setUser(data.user);
+      return data.user;
+    } catch {
+      setError("Login failed");
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -80,5 +111,14 @@ export function useUser() {
     fetchUsers();
   }, []);
 
-  return { users, isLoading, error, setName, user, fetchUsers, fetchUser };
+  return {
+    users,
+    isLoading,
+    error,
+    register,
+    login,
+    user,
+    fetchUsers,
+    fetchUser,
+  };
 }

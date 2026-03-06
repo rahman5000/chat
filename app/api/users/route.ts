@@ -1,3 +1,4 @@
+import { getHash } from "@/lib/getHash";
 import { SupabaseBroswer } from "@/lib/SupabaseBrowser";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -12,14 +13,24 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { name } = await req.json();
+    const { name, password } = await req.json();
 
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    if (!name || !password) {
+      return NextResponse.json(
+        { error: "Name and Password is required" },
+        { status: 400 },
+      );
     }
 
+    const hashedPassword = await getHash(password);
+
     const { data, error } = await SupabaseBroswer.from("users")
-      .insert([{ name }])
+      .insert([
+        {
+          name,
+          hashed_password: hashedPassword,
+        },
+      ])
       .select();
 
     if (error) {
