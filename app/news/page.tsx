@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 export default function NewsPage() {
@@ -33,7 +35,15 @@ export default function NewsPage() {
 
   return (
     <div className="w-full min-h-screen bg-[#17212b] text-white p-6">
-      <h1 className="text-2xl font-semibold mb-6">Top World News</h1>
+      <div className="flex items-center gap-2">
+        <Link href="/">
+          <button>
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        </Link>
+
+        <h1 className="text-2xl font-semibold mb-2">Top World News</h1>
+      </div>
 
       <div className="grid gap-4">
         {newsSites.map((site, index) => (

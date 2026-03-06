@@ -106,7 +106,7 @@ export default function Chat() {
         </div>
 
         <button
-          onClick={refetch}
+          onClick={() => refetch}
           className="text-sm text-blue-600 hover:underline"
         >
           Refresh
